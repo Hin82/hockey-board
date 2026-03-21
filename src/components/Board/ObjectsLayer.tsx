@@ -1,4 +1,4 @@
-import { Layer, Group, Circle, RegularPolygon, Text, Shape } from 'react-konva';
+import { Layer, Group, Circle, Ellipse, RegularPolygon, Text, Shape } from 'react-konva';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useToolStore } from '../../stores/useToolStore';
 import { GOALS, SMALL_GOAL } from './rink/rinkGeometry';
@@ -98,31 +98,99 @@ function ObjectShape({ obj, scale }: { obj: PlacedObject; scale: number }) {
   const baseSize = 12;
 
   switch (obj.type) {
-    case 'player':
+    case 'player': {
+      const r = baseSize * pixelSize;
+      const color = obj.color || '#dc2626';
+      // Darken color for base/shadow
+      const darken = (hex: string, amount: number) => {
+        const num = parseInt(hex.replace('#', ''), 16);
+        const R = Math.max(0, (num >> 16) - amount);
+        const G = Math.max(0, ((num >> 8) & 0xff) - amount);
+        const B = Math.max(0, (num & 0xff) - amount);
+        return `rgb(${R},${G},${B})`;
+      };
+      const darkColor = darken(color, 60);
+      const lightColor = darken(color, -40);
+
       return (
         <>
-          <Circle
-            radius={baseSize * pixelSize}
-            fill={obj.color || '#dc2626'}
-            stroke="#fff"
-            strokeWidth={2 * pixelSize}
+          {/* Shadow on ice */}
+          <Ellipse
+            radiusX={r * 0.9}
+            radiusY={r * 0.35}
+            offsetY={-r * 0.7}
+            fill="rgba(0,0,0,0.2)"
           />
+          {/* Base/bottom edge (3D depth) */}
+          <Ellipse
+            radiusX={r}
+            radiusY={r * 0.35}
+            offsetY={-r * 0.2}
+            fill={darkColor}
+          />
+          {/* Side cylinder */}
+          <Shape
+            sceneFunc={(context, shape) => {
+              context.beginPath();
+              // Left side
+              context.moveTo(-r, -r * 0.2);
+              context.lineTo(-r, r * 0.15);
+              // Bottom ellipse arc
+              context.ellipse(0, r * 0.15, r, r * 0.35, 0, Math.PI, 0, true);
+              // Right side
+              context.lineTo(r, -r * 0.2);
+              context.closePath();
+              context.fillStrokeShape(shape);
+            }}
+            fill={color}
+          />
+          {/* Top face (main colored disc) */}
+          <Ellipse
+            radiusX={r}
+            radiusY={r * 0.35}
+            offsetY={r * 0.15}
+            fill={color}
+            stroke={darkColor}
+            strokeWidth={1 * pixelSize}
+          />
+          {/* Highlight on top */}
+          <Ellipse
+            radiusX={r * 0.6}
+            radiusY={r * 0.18}
+            offsetY={r * 0.25}
+            fill={lightColor}
+            opacity={0.35}
+          />
+          {/* Outer ring on top */}
+          <Ellipse
+            radiusX={r * 0.85}
+            radiusY={r * 0.3}
+            offsetY={r * 0.15}
+            stroke="rgba(255,255,255,0.5)"
+            strokeWidth={1.5 * pixelSize}
+          />
+          {/* Label on top face */}
           {obj.label && (
             <Text
               text={obj.label}
-              fontSize={baseSize * 1.2 * pixelSize}
+              fontSize={r * 1.0}
               fill="#fff"
               fontStyle="bold"
+              fontFamily="Arial, sans-serif"
               align="center"
               verticalAlign="middle"
-              offsetX={baseSize * 0.6 * pixelSize}
-              offsetY={baseSize * 0.6 * pixelSize}
-              width={baseSize * 1.2 * pixelSize}
-              height={baseSize * 1.2 * pixelSize}
+              offsetX={r * 0.55}
+              offsetY={r * 0.15}
+              width={r * 1.1}
+              height={r * 0.7}
+              shadowColor="#000"
+              shadowBlur={2 * pixelSize}
+              shadowOpacity={0.5}
             />
           )}
         </>
       );
+    }
     case 'cone':
       return (
         <RegularPolygon
