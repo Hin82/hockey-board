@@ -19,6 +19,7 @@ export default function ObjectsLayer({ scale }: ObjectsLayerProps) {
   const didDrag = useRef(false);
 
   const isDraggable = activeTool === 'select';
+  const isRotateMode = activeTool === 'rotate';
 
   const handleDragStart = () => {
     didDrag.current = false;
@@ -46,20 +47,10 @@ export default function ObjectsLayer({ scale }: ObjectsLayerProps) {
     }
   };
 
-  // Double-tap/click to rotate 90 degrees
-  const lastTapTime = useRef<Record<string, number>>({});
-  const handleTapRotate = (id: string) => {
-    if (didDrag.current) return;
-    const now = Date.now();
-    const lastTap = lastTapTime.current[id] || 0;
-    if (now - lastTap < 350) {
-      const obj = objects.find((o) => o.id === id);
-      if (obj) {
-        updateRot(id, (obj.rotation + 90) % 360);
-      }
-      lastTapTime.current[id] = 0;
-    } else {
-      lastTapTime.current[id] = now;
+  const handleRotate = (id: string) => {
+    const obj = objects.find((o) => o.id === id);
+    if (obj) {
+      updateRot(id, (obj.rotation + 90) % 360);
     }
   };
 
@@ -76,12 +67,12 @@ export default function ObjectsLayer({ scale }: ObjectsLayerProps) {
           onDragMove={handleDragMove}
           onDragEnd={(e) => handleDragEnd(obj.id, e)}
           onTouchStart={() => isDraggable && handleLongPress(obj.id)}
-          onTouchEnd={() => {
-            cancelLongPress();
-            if (isDraggable) handleTapRotate(obj.id);
-          }}
+          onTouchEnd={cancelLongPress}
           onClick={() => {
-            if (isDraggable) handleTapRotate(obj.id);
+            if (isRotateMode) handleRotate(obj.id);
+          }}
+          onTap={() => {
+            if (isRotateMode) handleRotate(obj.id);
           }}
           onMouseDown={() => isDraggable && handleLongPress(obj.id)}
           onMouseUp={cancelLongPress}

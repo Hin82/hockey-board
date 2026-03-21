@@ -3,6 +3,7 @@ import {
   Pencil,
   Eraser,
   Move,
+  RotateCw,
   Plus,
   Undo2,
   Redo2,
@@ -135,6 +136,12 @@ export default function BottomToolbar() {
               label="Flytta"
               active={activeTool === 'select'}
               onClick={() => handleToolSelect('select')}
+            />
+            <ToolButton
+              icon={<RotateCw size={20} />}
+              label="Rotera"
+              active={activeTool === 'rotate'}
+              onClick={() => handleToolSelect('rotate')}
             />
             <ToolButton
               icon={<Plus size={20} />}

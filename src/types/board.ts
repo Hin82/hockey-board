@@ -1,4 +1,4 @@
-export type Tool = 'draw' | 'erase' | 'select' | 'place';
+export type Tool = 'draw' | 'erase' | 'select' | 'rotate' | 'place';
 
 export type RinkMode = 'full' | 'half' | 'zone';
 
