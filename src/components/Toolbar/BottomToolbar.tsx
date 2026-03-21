@@ -42,6 +42,9 @@ export default function BottomToolbar() {
     if (tool === 'draw') {
       setShowColorPicker(true);
       setShowBrushSize(true);
+    } else if (tool === 'erase') {
+      setShowColorPicker(false);
+      setShowBrushSize(true);
     } else {
       setShowColorPicker(false);
       setShowBrushSize(false);
@@ -75,7 +78,7 @@ export default function BottomToolbar() {
           <ColorPicker />
         </div>
       )}
-      {showBrushSize && activeTool === 'draw' && (
+      {showBrushSize && (activeTool === 'draw' || activeTool === 'erase') && (
         <div className="mx-2 mb-1">
           <BrushSizeSlider />
         </div>
